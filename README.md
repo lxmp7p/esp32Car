@@ -34,6 +34,8 @@ This firmware is designed for remote control of a machine via a website and incl
    git clone https://github.com/yourusername/esp32-project.git
    ```
 3. Создайте файл `src/creds.h` и настройте параметры подключения к Wi-Fi.
+```cpp
     const char* WIFI_SSID     = "************";
     const char* WIFI_PASSWORD = "************";
+```
 4. Загрузите прошивку на ESP32 с помощью PlatformIO или Arduino IDE.
