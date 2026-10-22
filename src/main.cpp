@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <WiFi.h>
+#include <WiFiAP.h>
 #include <WebServer.h>
 #include "ServoController.h"
 #include "WheelController.h"
@@ -15,6 +16,14 @@ WheelController wheelA(17, 16);
 WheelController wheelB(23, 22);
 WheelController wheelC(26, 25);
 WheelController wheelD(32, 33);
+
+const int WiFiButtonPin = 27;
+const unsigned long HoldTime = 3000;
+
+bool wasPressed = false;
+bool wifiFuncCalled = false;
+bool wifiApDisabled = false;
+unsigned long pressedAt = 0;
 
 void runWenicle(int pin) {
   delay(100);
@@ -71,6 +80,36 @@ void runLeft() {
   server.send(200, "text/plain", "LEFT");
 }
 
+void connectWifi() {
+  WiFi.softAPdisconnect(true);
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println("HTTP-сервер запущен");
+  Serial.println(WiFi.localIP());
+
+  server.begin(); 
+}
+
+void createWifi() {
+  WiFi.disconnect(true);
+  WiFi.mode(WIFI_AP);
+
+  if (!WiFi.softAP(WIFI_SSID_AP, WIFI_PASSWORD_AP)) {
+    Serial.println("Ошибка при старте точки доступа"); 
+    while (true) delay(1000); 
+  }
+  IPAddress ip = WiFi.softAPIP();
+  Serial.print("Точка доступа запущена. IP: ");
+  Serial.println(ip);
+
+  server.begin(); 
+}
+
 void setup() {
   Serial.begin(115200);
   delay(1000);
@@ -80,14 +119,10 @@ void setup() {
   wheelC.begin();
   wheelD.begin();
 
+  pinMode(WiFiButtonPin, INPUT);
+
   horizontalServo.begin();
   verticalServo.begin();
-
-  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
 
   server.on("/", []() {
     server.send(200, "text/html", INDEX_HTML);
@@ -134,15 +169,45 @@ void setup() {
      server.send(200, "text/plain", "Vertical: left");
   });
 
-
-  Serial.println("=== ТЕСТ МОТОРА ===");
-  Serial.println("Мотор будет включаться на 2 сек и выключаться на 2 сек");
-  Serial.println();
-  server.begin(); 
-  Serial.println("HTTP-сервер запущен");
-  Serial.println(WiFi.localIP());
+  connectWifi();
 }
 
+int messageInSend = false;
+int messageOutSend = false;
 void loop() {
+  bool isPressed = digitalRead(WiFiButtonPin) == HIGH;
+  
+
+  if (isPressed && !wasPressed) {
+    pressedAt = millis();
+    wifiFuncCalled = false;
+  }
+
+  if (!isPressed) {
+    if (messageOutSend == false) {
+      Serial.print("кнопка отжата\n");
+      messageInSend = false;
+      messageOutSend = true;
+    }  
+  } else {
+    if (messageInSend == false) {
+        Serial.print("кнопка нажата\n");
+        messageInSend = true;
+        messageOutSend = false;
+    }  
+  }
+
+  if (isPressed && !wifiFuncCalled && millis()-pressedAt >= HoldTime) {
+    if (wifiApDisabled == true) {
+      createWifi();
+      wifiApDisabled = false;
+    } else {
+      connectWifi();
+      wifiApDisabled = true;
+    }
+    wifiFuncCalled = true;
+  }
+
+  wasPressed = isPressed;
   server.handleClient();
 }
