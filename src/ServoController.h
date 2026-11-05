@@ -19,4 +19,6 @@ public:
     int getAngle();
     void left();
     void right();
+    void up();
+    void down();
 };

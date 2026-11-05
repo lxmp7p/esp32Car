@@ -119,7 +119,7 @@ void setup() {
   wheelC.begin();
   wheelD.begin();
 
-  pinMode(WiFiButtonPin, INPUT);
+  pinMode(WiFiButtonPin, INPUT_PULLUP);
 
   horizontalServo.begin();
   verticalServo.begin();
@@ -161,12 +161,12 @@ void setup() {
   });
 
   server.on("/camera_down",  HTTP_GET, []() {
-     verticalServo.left();
-     server.send(200, "text/plain", "Vertical: left");
+      verticalServo.down();
+      server.send(200, "text/plain", "Vertical: down");
   });
   server.on("/camera_up",  HTTP_GET, []() {
-     verticalServo.right();
-     server.send(200, "text/plain", "Vertical: left");
+      verticalServo.up();
+      server.send(200, "text/plain", "Vertical: up");
   });
 
   connectWifi();
@@ -175,7 +175,7 @@ void setup() {
 int messageInSend = false;
 int messageOutSend = false;
 void loop() {
-  bool isPressed = digitalRead(WiFiButtonPin) == HIGH;
+  bool isPressed = digitalRead(WiFiButtonPin) == LOW;  // Button pulls LOW when pressed (INPUT_PULLUP mode)
   
 
   if (isPressed && !wasPressed) {

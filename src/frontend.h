@@ -165,8 +165,8 @@ const char INDEX_HTML[] PROGMEM = R"rawliteral(
     <div id="cameraController" class="dpad">
       <button class="up" onclick="sendCommandCamera('camera_up')">Вверх</button>
       <button class="down" onclick="sendCommandCamera('camera_down')">Вниз</button>
-      <button class="right" onclick="sendCommandCamera('camera_left')">Вправо</button>
-      <button class="left" onclick="sendCommandCamera('camera_right')">Влево</button>
+      <button class="right" onclick="sendCommandCamera('camera_right')">Вправо</button>
+      <button class="left" onclick="sendCommandCamera('camera_left')">Влево</button>
     </div>
     <div class="dpad2x2">
       <button class="d" onclick="sendCommand('run_d')">D</button>

@@ -25,12 +25,22 @@ int ServoController::getAngle() {
     return servo.read();
 };
 
+void ServoController::left() {
+    int currentAngle = getAngle();
+    rotate(currentAngle-rotateStep);
+};
+
 void ServoController::right() {
     int currentAngle = getAngle();
     rotate(currentAngle+rotateStep);
 };
 
-void ServoController::left() {
+void ServoController::down() {
     int currentAngle = getAngle();
     rotate(currentAngle-rotateStep);
+};
+
+void ServoController::up() {
+    int currentAngle = getAngle();
+    rotate(currentAngle+rotateStep);
 };
